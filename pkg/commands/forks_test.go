@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestSuccessfulFetchForStars(t *testing.T) {
+func TestSuccessfulFetchForForks(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		fileName := "testdata/repos.json"
 
@@ -32,7 +32,7 @@ func TestSuccessfulFetchForStars(t *testing.T) {
 		Top: 10,
 	}
 
-	results := getReposByStars(conf)
+	results := getReposByForks(conf)
 
 	if len(results) != conf.Top {
 		t.Errorf("wrong result count; expected: %d, got %d", conf.Top, len(results))
@@ -44,17 +44,17 @@ func TestSuccessfulFetchForStars(t *testing.T) {
 		t.Errorf("wrong repo at top; expected Hystrix, got: %s", res)
 	}
 
-	if !strings.Contains(res, "13054") {
-		t.Errorf("wrong star count for top; expected: %d, got: %s", 13054, res)
+	if !strings.Contains(res, "2611") {
+		t.Errorf("wrong fork count for top; expected: %d, got: %s", 2611, res)
 	}
 
 	res = results[1]
 
-	if !strings.Contains(res, "SimianArmy") {
-		t.Errorf("wrong repo at top; expected SimianArmy, got: %s", res)
+	if !strings.Contains(res, "eureka") {
+		t.Errorf("wrong repo at top; expected eureka, got: %s", res)
 	}
 
-	if !strings.Contains(res, "6321") {
-		t.Errorf("wrong fork count for top; expected: %d, got: %s", 6321, res)
+	if !strings.Contains(res, "1190") {
+		t.Errorf("wrong fork count for top; expected: %d, got: %s", 1190, res)
 	}
 }
