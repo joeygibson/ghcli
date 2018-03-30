@@ -28,6 +28,18 @@ var (
 		},
 		Run: CmdStars,
 	}
+
+	forksCmd = &cobra.Command{
+		Use:   "forks",
+		Short: "Display info about the top-n repos based on number of forks",
+		Long:  "Display info about the top-n repos based on number of forks",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if viper.GetBool("verbose") {
+				logrus.SetLevel(logrus.DebugLevel)
+			}
+		},
+		Run: CmdForks,
+	}
 )
 
 func CmdRoot(cmd *cobra.Command, _ []string) {
@@ -36,6 +48,10 @@ func CmdRoot(cmd *cobra.Command, _ []string) {
 
 func CmdStars(_ *cobra.Command, _ []string) {
 	commands.Stars(config.GetConfig())
+}
+
+func CmdForks(_ *cobra.Command, _ []string) {
+	commands.Forks(config.GetConfig())
 }
 
 func init() {
@@ -67,6 +83,7 @@ func init() {
 	viper.BindPFlag("top", rootCmd.PersistentFlags().Lookup("top"))
 
 	rootCmd.AddCommand(starsCmd)
+	rootCmd.AddCommand(forksCmd)
 }
 
 func main() {

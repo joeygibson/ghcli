@@ -1,6 +1,10 @@
 package github
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+	"text/tabwriter"
+)
 
 type Repos []Repo
 
@@ -20,6 +24,14 @@ type Owner struct {
 }
 
 func (repo Repo) String() string {
-	return fmt.Sprintf("Name: %s\nDescription: %s\nStars: %d\n", repo.Name,
-		repo.Description, repo.Stargazers)
+	var buf strings.Builder
+
+	w := tabwriter.NewWriter(&buf, 0, 0, 1, ' ', 0)
+	fmt.Fprintf(w, "Name:\t%s\n", repo.Name)
+	fmt.Fprintf(w, "Description:\t%s\n", repo.Description)
+	fmt.Fprintf(w, "Stars:\t%d, Forks:\t%d\n", repo.Stargazers, repo.Forks)
+
+	w.Flush()
+
+	return buf.String()
 }
