@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+arch=amd64
+platforms=(darwin linux)
+build=`git rev-parse HEAD`
+version=${VERSION:-snapshot${build}}
+
+for platform in "${platforms[@]}"; do
+  GOOS=${platform} GOARCH=${arch} go build -o target/ghcli-${platform}-${arch}-${version} \
+    --ldflags "-X github.com/joeygibson/main.version=$version \
+    -X github.com/joeygibson/ghcli/main.build=$build" 
+done
+
