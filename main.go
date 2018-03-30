@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/joeygibson/ghcli/pkg/commands"
 	"github.com/joeygibson/ghcli/pkg/config"
 	"github.com/sirupsen/logrus"
@@ -29,18 +28,6 @@ var (
 		},
 		Run: CmdStars,
 	}
-
-	versionCmd = &cobra.Command{
-		Use:   "version",
-		Short: "Print the version number of ghcli",
-		Long:  ``,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("%s (build: %s)\n", version, build)
-		},
-	}
-
-	version string
-	build   string
 )
 
 func CmdRoot(cmd *cobra.Command, _ []string) {
@@ -80,7 +67,6 @@ func init() {
 	viper.BindPFlag("top", rootCmd.PersistentFlags().Lookup("top"))
 
 	rootCmd.AddCommand(starsCmd)
-	rootCmd.AddCommand(versionCmd)
 }
 
 func main() {

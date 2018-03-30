@@ -32,6 +32,10 @@ func GetConfig() *Config {
 			Token:    token,
 			Top:      viper.GetInt("top"),
 		}
+
+		if conf.Org == "" {
+			logrus.Fatal("no organization specified")
+		}
 	}
 
 	return conf
