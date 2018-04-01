@@ -75,9 +75,6 @@ func (c *Client) get(url string) ([]byte, error) {
 		logrus.Debug("Authenticating with OAuth token")
 		authHeader := fmt.Sprintf("token %s", c.conf.Token)
 		req.Header.Add("Authorization", authHeader)
-	} else if c.conf.User != "" && c.conf.Password != "" {
-		logrus.Debug("Authenticating with basic auth")
-		req.SetBasicAuth(c.conf.User, c.conf.Password)
 	} else {
 		logrus.Debug("Proceeding as anonymous")
 	}

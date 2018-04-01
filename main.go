@@ -12,15 +12,14 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use:   "ghcli",
-		Short: "Command-line tool to get stats about Github organizations",
-		Long:  "Command-line tool to get stats about Github organizations",
+		Short: "Display repos from a Github organization",
+		Long:  "Display repos from a Github organization, sorted by different criteria.",
 		Run:   CmdRoot,
 	}
 
 	starsCmd = &cobra.Command{
 		Use:   "stars",
-		Short: "Display info about the top-n repos based on number of stars",
-		Long:  "Display info about the top-n repos based on number of stars",
+		Short: "sort by the number of stars",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if viper.GetBool("verbose") {
 				logrus.SetLevel(logrus.DebugLevel)
@@ -31,8 +30,7 @@ var (
 
 	forksCmd = &cobra.Command{
 		Use:   "forks",
-		Short: "Display info about the top-n repos based on number of forks",
-		Long:  "Display info about the top-n repos based on number of forks",
+		Short: "sort by number of forks",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if viper.GetBool("verbose") {
 				logrus.SetLevel(logrus.DebugLevel)
@@ -44,14 +42,12 @@ var (
 	loginCmd = &cobra.Command{
 		Use:   "login <github OAuth token>",
 		Short: "Set your Github OAuth token",
-		Long:  "Set your Github OAuth token",
 		Run:   CmdLogin,
 	}
 
 	pullRequestsCmd = &cobra.Command{
 		Use:   "pull-requests",
-		Short: "Display info about the top-n repos based on number of pull requests",
-		Long:  "Display info about the top-n repos based on number of pull requests",
+		Short: "sort by number of pull requests",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if viper.GetBool("verbose") {
 				logrus.SetLevel(logrus.DebugLevel)
@@ -62,8 +58,7 @@ var (
 
 	contributionsCmd = &cobra.Command{
 		Use:   "contributions",
-		Short: "Display info about the top-n repos based on number of pull requests/fork",
-		Long:  "Display info about the top-n repos based on number of pull requests/fork",
+		Short: "sort by number of pull requests/fork",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if viper.GetBool("verbose") {
 				logrus.SetLevel(logrus.DebugLevel)
@@ -111,15 +106,11 @@ func init() {
 
 	rootCmd.PersistentFlags().Bool("verbose", false, "verbose output")
 	rootCmd.PersistentFlags().String("org", "", "organization to use")
-	rootCmd.PersistentFlags().String("user", "", "username for authorization")
-	rootCmd.PersistentFlags().String("password", "", "password for authorization")
 	rootCmd.PersistentFlags().String("token", "", "Github OAuth token")
 	rootCmd.PersistentFlags().Int("top", 10, "number of results to return")
 
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	viper.BindPFlag("org", rootCmd.PersistentFlags().Lookup("org"))
-	viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("user"))
-	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
 	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
 	viper.BindPFlag("top", rootCmd.PersistentFlags().Lookup("top"))
 

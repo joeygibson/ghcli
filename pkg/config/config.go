@@ -11,11 +11,9 @@ import (
 )
 
 type Config struct {
-	Org      string `yaml:"org,omitempty"`
-	User     string `yaml:"-"`
-	Password string `yaml:"-"`
-	Token    string `yaml:"token,omitempty"`
-	Top      int    `yaml:"top,omitempty"`
+	Org   string `yaml:"org,omitempty"`
+	Token string `yaml:"token,omitempty"`
+	Top   int    `yaml:"top,omitempty"`
 }
 
 var conf *Config
@@ -24,11 +22,9 @@ var conf *Config
 func GetConfig() *Config {
 	if conf == nil {
 		conf = &Config{
-			Org:      viper.GetString("org"),
-			User:     viper.GetString("user"),
-			Password: viper.GetString("password"),
-			Token:    viper.GetString("token"),
-			Top:      viper.GetInt("top"),
+			Org:   viper.GetString("org"),
+			Token: viper.GetString("token"),
+			Top:   viper.GetInt("top"),
 		}
 
 		if conf.Org == "" {
@@ -50,7 +46,7 @@ func (c *Config) Save() error {
 
 	file, err := os.Create(fileName)
 	if err != nil {
-		return errors.New(fmt.Sprintf("creating %s: %v", fileName))
+		return errors.New(fmt.Sprintf("creating %s: %v", fileName, err))
 	}
 
 	defer file.Close()
@@ -82,7 +78,7 @@ func LoadFromDisk() (*Config, error) {
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("opening %s: %v", fileName))
+		return nil, errors.New(fmt.Sprintf("opening %s: %v", fileName, err))
 	}
 
 	defer file.Close()
