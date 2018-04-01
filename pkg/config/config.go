@@ -1,21 +1,21 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"io/ioutil"
+	"gopkg.in/yaml.v2"
 	"os"
 	"os/user"
-	"strings"
 )
 
 type Config struct {
-	Org      string
-	User     string
-	Password string
-	Token    string
-	Top      int
+	Org      string `yaml:"org,omitempty"`
+	User     string `yaml:"-"`
+	Password string `yaml:"-"`
+	Token    string `yaml:"token,omitempty"`
+	Top      int    `yaml:"top,omitempty"`
 }
 
 var conf *Config
@@ -23,13 +23,11 @@ var conf *Config
 // GetConfig returns the current config, loading it from CLI/env/config the first time.
 func GetConfig() *Config {
 	if conf == nil {
-		token := readTokenFile(viper.GetString("token.file"))
-
 		conf = &Config{
 			Org:      viper.GetString("org"),
 			User:     viper.GetString("user"),
 			Password: viper.GetString("password"),
-			Token:    token,
+			Token:    viper.GetString("token"),
 			Top:      viper.GetInt("top"),
 		}
 
@@ -41,32 +39,62 @@ func GetConfig() *Config {
 	return conf
 }
 
-func readTokenFile(tokenFile string) string {
-	_, err := os.Stat(tokenFile)
-
-	if os.IsNotExist(err) {
-		if tokenFile == GetDefaultTokenFileName() {
-			return ""
-		} else {
-			logrus.Fatalf("OAuth token file %s not found", tokenFile)
-		}
-	}
-
-	contents, err := ioutil.ReadFile(tokenFile)
-	if err != nil {
-		logrus.Fatalf("%s exists, but cannot be read: %v", tokenFile, err)
-	}
-
-	return strings.TrimSpace(string(contents))
-}
-
-// GetDefaultTokenFileName crafts a filename for the OAuth token, which lives in the user's
-// home directory.
-func GetDefaultTokenFileName() string {
+// Save writes out the current configuration to disk
+func (c *Config) Save() error {
 	currentUser, err := user.Current()
 	if err != nil {
 		logrus.Fatalf("unable to determine current user: %v", err)
 	}
 
-	return fmt.Sprintf("%s/.ghcli-token", currentUser.HomeDir)
+	fileName := fmt.Sprintf("%s/.ghcli.yaml", currentUser.HomeDir)
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		return errors.New(fmt.Sprintf("creating %s: %v", fileName))
+	}
+
+	defer file.Close()
+
+	encoder := yaml.NewEncoder(file)
+
+	err = encoder.Encode(c)
+	if err != nil {
+		return errors.New(fmt.Sprintf("writing config: %v", err))
+	}
+
+	return nil
+}
+
+// LoadFromDisk will load a config file from the user's home directory,
+// if it exists.
+func LoadFromDisk() (*Config, error) {
+	currentUser, err := user.Current()
+	if err != nil {
+		logrus.Fatalf("unable to determine current user: %v", err)
+	}
+
+	fileName := fmt.Sprintf("%s/.ghcli.yaml", currentUser.HomeDir)
+
+	_, err = os.Stat(fileName)
+	if os.IsNotExist(err) {
+		return &Config{}, nil
+	}
+
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("opening %s: %v", fileName))
+	}
+
+	defer file.Close()
+
+	var conf Config
+
+	decoder := yaml.NewDecoder(file)
+
+	err = decoder.Decode(&conf)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("decoding config %s: %v", fileName, err))
+	}
+
+	return &conf, nil
 }

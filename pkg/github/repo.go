@@ -29,7 +29,8 @@ func (repo Repo) String() string {
 	w := tabwriter.NewWriter(&buf, 0, 0, 1, ' ', 0)
 	fmt.Fprintf(w, "Name:\t%s\n", repo.Name)
 	fmt.Fprintf(w, "Description:\t%s\n", repo.Description)
-	fmt.Fprintf(w, "Stars:\t%d, Forks:\t%d\n", repo.Stargazers, repo.Forks)
+	fmt.Fprintf(w, "Stars:\t%d\n", repo.Stargazers)
+	fmt.Fprintf(w, "Forks:\t%d\n", repo.Forks)
 
 	w.Flush()
 

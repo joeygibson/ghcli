@@ -40,6 +40,13 @@ var (
 		},
 		Run: CmdForks,
 	}
+
+	loginCmd = &cobra.Command{
+		Use:   "login <github OAuth token>",
+		Short: "Set your Github OAuth token",
+		Long:  "Set your Github OAuth token",
+		Run:   CmdLogin,
+	}
 )
 
 func CmdRoot(cmd *cobra.Command, _ []string) {
@@ -54,6 +61,10 @@ func CmdForks(_ *cobra.Command, _ []string) {
 	commands.Forks(config.GetConfig())
 }
 
+func CmdLogin(_ *cobra.Command, args []string) {
+	commands.Login(args)
+}
+
 func init() {
 	viper.SetEnvPrefix("GH_CLI")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
@@ -66,24 +77,23 @@ func init() {
 
 	viper.ReadInConfig()
 
-	defaultTokenFile := config.GetDefaultTokenFileName()
-
 	rootCmd.PersistentFlags().Bool("verbose", false, "verbose output")
 	rootCmd.PersistentFlags().String("org", "", "organization to use")
 	rootCmd.PersistentFlags().String("user", "", "username for authorization")
 	rootCmd.PersistentFlags().String("password", "", "password for authorization")
-	rootCmd.PersistentFlags().String("token-file", defaultTokenFile, "file containing OAuth token")
+	rootCmd.PersistentFlags().String("token", "", "Github OAuth token")
 	rootCmd.PersistentFlags().Int("top", 10, "number of results to return")
 
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	viper.BindPFlag("org", rootCmd.PersistentFlags().Lookup("org"))
 	viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("user"))
 	viper.BindPFlag("password", rootCmd.PersistentFlags().Lookup("password"))
-	viper.BindPFlag("token.file", rootCmd.PersistentFlags().Lookup("token-file"))
+	viper.BindPFlag("token", rootCmd.PersistentFlags().Lookup("token"))
 	viper.BindPFlag("top", rootCmd.PersistentFlags().Lookup("top"))
 
 	rootCmd.AddCommand(starsCmd)
 	rootCmd.AddCommand(forksCmd)
+	rootCmd.AddCommand(loginCmd)
 }
 
 func main() {
