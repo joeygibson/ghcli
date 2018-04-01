@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+docker build -t go-builder $(pwd)/scripts
+

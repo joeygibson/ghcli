@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+docker run -it --rm \
+    -v $(pwd):/go/src/github.com/joeygibson/ghcli \
+    go-builder
+

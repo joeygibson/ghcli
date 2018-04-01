@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+arch=amd64
+platforms=(darwin linux)
+
+dep ensure -vendor-only
+
+for platform in "${platforms[@]}"; do
+  GOOS=${platform} GOARCH=${arch} go build -o target/ghcli-${platform}-${arch}
+done
+
