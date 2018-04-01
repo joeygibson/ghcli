@@ -45,6 +45,22 @@ func (c *Client) GetReposForOrg(org string) (github.Repos, error) {
 	return repos, nil
 }
 
+func (c *Client) GetPullRequestsForRepo(url string) (github.PullRequests, error) {
+	result, err := c.get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	var pullRequests github.PullRequests
+
+	err = json.Unmarshal(result, &pullRequests)
+	if err != nil {
+		return nil, err
+	}
+
+	return pullRequests, nil
+}
+
 func (c *Client) get(url string) ([]byte, error) {
 	if len(strings.TrimSpace(url)) == 0 {
 		return nil, errors.New("invalid URL")
