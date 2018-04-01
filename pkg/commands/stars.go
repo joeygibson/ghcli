@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/joeygibson/ghcli/pkg/client"
 	"github.com/joeygibson/ghcli/pkg/config"
+	"github.com/joeygibson/ghcli/pkg/github"
 	"github.com/sirupsen/logrus"
 	"sort"
 )
@@ -15,7 +16,7 @@ func Stars(conf *config.Config) {
 	}
 }
 
-func getReposByStars(conf *config.Config) []string {
+func getReposByStars(conf *config.Config) github.Repos {
 	cl := client.New(conf)
 
 	repos, err := cl.GetReposForOrg(conf.Org)
@@ -29,11 +30,9 @@ func getReposByStars(conf *config.Config) []string {
 		return repos[i].Stargazers > repos[j].Stargazers
 	})
 
-	var results []string
-
-	for i := 0; i < conf.Top; i++ {
-		results = append(results, repos[i].String())
+	if conf.Top >= len(repos) {
+		return repos
+	} else {
+		return repos[0:conf.Top]
 	}
-
-	return results
 }

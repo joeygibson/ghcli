@@ -104,7 +104,7 @@ func init() {
 
 	viper.ReadInConfig()
 
-	rootCmd.PersistentFlags().Bool("verbose", false, "verbose output")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().String("org", "", "organization to use")
 	rootCmd.PersistentFlags().String("token", "", "Github OAuth token")
 	rootCmd.PersistentFlags().Int("top", 10, "number of results to return")

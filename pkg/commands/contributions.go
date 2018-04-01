@@ -3,17 +3,18 @@ package commands
 import (
 	"fmt"
 	"github.com/joeygibson/ghcli/pkg/config"
+	"github.com/joeygibson/ghcli/pkg/github"
 	"sort"
 )
 
 // Contributions displays information about the repos, based on the number of PR/forks each has
 func Contributions(conf *config.Config) {
 	for _, res := range getReposSortedByContributions(conf) {
-		fmt.Println(res)
+		fmt.Println(res.StringWithPullRequestsAndContributions())
 	}
 }
 
-func getReposSortedByContributions(conf *config.Config) []string {
+func getReposSortedByContributions(conf *config.Config) github.Repos {
 	repos := getReposWithPullRequests(conf)
 
 	for i := range repos {
@@ -24,11 +25,9 @@ func getReposSortedByContributions(conf *config.Config) []string {
 		return repos[i].PrsPerForkCount > repos[j].PrsPerForkCount
 	})
 
-	var results []string
-
-	for i := 0; i < conf.Top; i++ {
-		results = append(results, repos[i].StringWithPullRequestsAndContributions())
+	if conf.Top >= len(repos) {
+		return repos
+	} else {
+		return repos[0:conf.Top]
 	}
-
-	return results
 }

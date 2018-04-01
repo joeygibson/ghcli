@@ -39,7 +39,9 @@ func TestSuccessfulFetchForForks(t *testing.T) {
 	}
 
 	res := results[0]
-
+	forksLine := strings.Split(res, "\n")[3]
+	forksChunks := strings.Split(forksLine, ":")
+	forks := strings.TrimSpace()
 	if !strings.Contains(res, "Hystrix") {
 		t.Errorf("wrong repo at top; expected Hystrix, got: %s", res)
 	}

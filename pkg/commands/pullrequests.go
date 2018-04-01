@@ -12,10 +12,13 @@ import (
 
 // PullRequests displays information about the repos, based on the number of PRs each has
 func PullRequests(conf *config.Config) {
-	for _, res := range getReposSortedByPullRequests(conf) {
-		fmt.Println(res)
+	repos := getReposSortedByPullRequests(conf)
+
+	for _, repo := range repos {
+		fmt.Println(repo.StringWithPullRequests())
 	}
 }
+
 func getReposWithPullRequests(conf *config.Config) github.Repos {
 	cl := client.New(conf)
 
@@ -42,18 +45,16 @@ func getReposWithPullRequests(conf *config.Config) github.Repos {
 	return repos
 }
 
-func getReposSortedByPullRequests(conf *config.Config) []string {
+func getReposSortedByPullRequests(conf *config.Config) github.Repos {
 	repos := getReposWithPullRequests(conf)
 
 	sort.Slice(repos[:], func(i, j int) bool {
 		return repos[i].PullRequestCount > repos[j].PullRequestCount
 	})
 
-	var results []string
-
-	for i := 0; i < conf.Top; i++ {
-		results = append(results, repos[i].StringWithPullRequests())
+	if conf.Top >= len(repos) {
+		return repos
+	} else {
+		return repos[0:conf.Top]
 	}
-
-	return results
 }
