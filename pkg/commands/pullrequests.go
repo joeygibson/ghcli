@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"github.com/joeygibson/ghcli/pkg/client"
 	"github.com/joeygibson/ghcli/pkg/config"
+	"github.com/joeygibson/ghcli/pkg/github"
 	"github.com/sirupsen/logrus"
 	"sort"
 	"strings"
 )
 
-// Forks displays information about the repos, based on the number of forks each has
+// PullRequests displays information about the repos, based on the number of PRs each has
 func PullRequests(conf *config.Config) {
-	for _, res := range getReposByPullRequests(conf) {
+	for _, res := range getReposSortedByPullRequests(conf) {
 		fmt.Println(res)
 	}
 }
-
-func getReposByPullRequests(conf *config.Config) []string {
+func getReposWithPullRequests(conf *config.Config) github.Repos {
 	cl := client.New(conf)
 
 	repos, err := cl.GetReposForOrg(conf.Org)
@@ -39,6 +39,12 @@ func getReposByPullRequests(conf *config.Config) []string {
 		repos[i].PullRequestCount = len(prs)
 	}
 
+	return repos
+}
+
+func getReposSortedByPullRequests(conf *config.Config) []string {
+	repos := getReposWithPullRequests(conf)
+
 	sort.Slice(repos[:], func(i, j int) bool {
 		return repos[i].PullRequestCount > repos[j].PullRequestCount
 	})
@@ -46,7 +52,7 @@ func getReposByPullRequests(conf *config.Config) []string {
 	var results []string
 
 	for i := 0; i < conf.Top; i++ {
-		results = append(results, repos[i].String())
+		results = append(results, repos[i].StringWithPullRequests())
 	}
 
 	return results

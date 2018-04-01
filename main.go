@@ -59,6 +59,18 @@ var (
 		},
 		Run: CmdPullRequests,
 	}
+
+	contributionsCmd = &cobra.Command{
+		Use:   "contributions",
+		Short: "Display info about the top-n repos based on number of pull requests/fork",
+		Long:  "Display info about the top-n repos based on number of pull requests/fork",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if viper.GetBool("verbose") {
+				logrus.SetLevel(logrus.DebugLevel)
+			}
+		},
+		Run: CmdContributions,
+	}
 )
 
 func CmdRoot(cmd *cobra.Command, _ []string) {
@@ -79,6 +91,10 @@ func CmdLogin(_ *cobra.Command, args []string) {
 
 func CmdPullRequests(_ *cobra.Command, _ []string) {
 	commands.PullRequests(config.GetConfig())
+}
+
+func CmdContributions(_ *cobra.Command, _ []string) {
+	commands.Contributions(config.GetConfig())
 }
 
 func init() {
@@ -111,6 +127,7 @@ func init() {
 	rootCmd.AddCommand(forksCmd)
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(pullRequestsCmd)
+	rootCmd.AddCommand(contributionsCmd)
 }
 
 func main() {
