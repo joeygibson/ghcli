@@ -9,26 +9,36 @@ import (
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
 type Client struct {
-	conf   *config.Config
-	client *http.Client
+	conf      *config.Config
+	githubUrl string
+	client    *http.Client
 }
 
 const OrgRepoUrl = "https://api.github.com/orgs/%s/repos"
 
 // New creates a strucure for communicating with Github
 func New(inConf *config.Config) Client {
+	url := OrgRepoUrl
+
+	specifiedUrl := os.Getenv("GHCLI_GITHUB_URL")
+	if specifiedUrl != "" {
+		url = specifiedUrl
+	}
+
 	return Client{
-		conf:   inConf,
-		client: &http.Client{},
+		conf:      inConf,
+		githubUrl: url,
+		client:    &http.Client{},
 	}
 }
 
 func (c *Client) GetReposForOrg(org string) (github.Repos, error) {
-	url := fmt.Sprintf(OrgRepoUrl, c.conf.Org)
+	url := fmt.Sprintf(c.githubUrl, c.conf.Org)
 
 	result, err := c.get(url)
 	if err != nil {

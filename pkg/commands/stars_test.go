@@ -1,60 +1,60 @@
 package commands
 
 import (
-	"bytes"
 	"github.com/joeygibson/ghcli/pkg/config"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
 func TestSuccessfulFetchForStars(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		fileName := "testdata/repos.json"
-
-		fileContents, err := ioutil.ReadFile(fileName)
-		if err != nil {
-			t.Errorf("loading %s: %v", fileName, err)
-		}
-
-		w.WriteHeader(http.StatusOK)
-		io.Copy(w, bytes.NewReader(fileContents))
-	}
-
-	server := httptest.NewServer(http.HandlerFunc(handler))
-	defer server.Close()
+	setup(t)
+	defer cleanup()
 
 	conf := &config.Config{
 		Org: "netflix",
 		Top: 10,
 	}
 
-	results := getReposByStars(conf)
+	repos := getReposByStars(conf)
 
-	if len(results) != conf.Top {
-		t.Errorf("wrong result count; expected: %d, got %d", conf.Top, len(results))
+	if len(repos) != conf.Top {
+		t.Errorf("wrong result count; expected: %d, got %d", conf.Top, len(repos))
 	}
 
-	res := results[0]
-
-	if !strings.Contains(res, "Hystrix") {
-		t.Errorf("wrong repo at top; expected Hystrix, got: %s", res)
+	data := []struct {
+		Index int
+		Name  string
+		Stars int
+	}{
+		{0, "Hystrix", 13054},
+		{1, "SimianArmy", 6321},
+		{6, "curator", 1816},
 	}
 
-	if !strings.Contains(res, "13054") {
-		t.Errorf("wrong star count for top; expected: %d, got: %s", 13054, res)
+	for _, d := range data {
+		repo := repos[d.Index]
+
+		if repo.Name != d.Name {
+			t.Errorf("wrong repo at %d; expected %s, got: %s", d.Index, d.Name, repo.Name)
+		}
+
+		if repo.Stargazers != d.Stars {
+			t.Errorf("wrong star count for %s; expected: %d, got: %d", repo.Name, d.Stars, repo.Stargazers)
+		}
+	}
+}
+
+func TestTopGreaterThanLength(t *testing.T) {
+	setup(t)
+	defer cleanup()
+
+	conf := &config.Config{
+		Org: "netflix",
+		Top: 99999,
 	}
 
-	res = results[1]
+	repos := getReposByStars(conf)
 
-	if !strings.Contains(res, "SimianArmy") {
-		t.Errorf("wrong repo at top; expected SimianArmy, got: %s", res)
-	}
-
-	if !strings.Contains(res, "6321") {
-		t.Errorf("wrong fork count for top; expected: %d, got: %s", 6321, res)
+	if len(repos) != 30 {
+		t.Errorf("wrong result count; expected: %d, got %d", 30, len(repos))
 	}
 }
