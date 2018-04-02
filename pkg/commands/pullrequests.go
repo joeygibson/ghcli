@@ -31,7 +31,6 @@ func getReposWithPullRequests(conf *config.Config) github.Repos {
 
 	for i := range repos {
 		url := strings.TrimSuffix(repos[i].PullRequestUrl, "{/number}")
-		logrus.Debugf("PR URL: %s", url)
 
 		prs, err := cl.GetPullRequestsForRepo(url)
 		if err != nil {

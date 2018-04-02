@@ -11,12 +11,12 @@ import (
 
 // Stars displays information about the highest-starred repos for the given organization.
 func Stars(conf *config.Config) {
-	for _, res := range getReposByStars(conf) {
+	for _, res := range getReposSortedByStars(conf) {
 		fmt.Println(res)
 	}
 }
 
-func getReposByStars(conf *config.Config) github.Repos {
+func getReposSortedByStars(conf *config.Config) github.Repos {
 	cl := client.New(conf)
 
 	repos, err := cl.GetReposForOrg(conf.Org)

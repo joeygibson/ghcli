@@ -21,7 +21,7 @@ type Client struct {
 
 const OrgRepoUrl = "https://api.github.com/orgs/%s/repos"
 
-// New creates a strucure for communicating with Github
+// New creates a structure for communicating with Github
 func New(inConf *config.Config) Client {
 	url := OrgRepoUrl
 

@@ -11,12 +11,12 @@ import (
 
 // Forks displays information about the repos, based on the number of forks each has
 func Forks(conf *config.Config) {
-	for _, repo := range getReposByForks(conf) {
+	for _, repo := range getReposSortedByForks(conf) {
 		fmt.Println(repo)
 	}
 }
 
-func getReposByForks(conf *config.Config) github.Repos {
+func getReposSortedByForks(conf *config.Config) github.Repos {
 	cl := client.New(conf)
 
 	repos, err := cl.GetReposForOrg(conf.Org)

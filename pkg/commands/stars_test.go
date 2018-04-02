@@ -14,7 +14,7 @@ func TestSuccessfulFetchForStars(t *testing.T) {
 		Top: 10,
 	}
 
-	repos := getReposByStars(conf)
+	repos := getReposSortedByStars(conf)
 
 	if len(repos) != conf.Top {
 		t.Errorf("wrong result count; expected: %d, got %d", conf.Top, len(repos))
@@ -52,7 +52,7 @@ func TestTopGreaterThanLength(t *testing.T) {
 		Top: 99999,
 	}
 
-	repos := getReposByStars(conf)
+	repos := getReposSortedByStars(conf)
 
 	if len(repos) != 30 {
 		t.Errorf("wrong result count; expected: %d, got %d", 30, len(repos))

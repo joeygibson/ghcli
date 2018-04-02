@@ -14,7 +14,7 @@ func TestSuccessfulFetchForForks(t *testing.T) {
 		Top: 10,
 	}
 
-	repos := getReposByForks(conf)
+	repos := getReposSortedByForks(conf)
 
 	if len(repos) != conf.Top {
 		t.Errorf("wrong result count; expected: %d, got %d", conf.Top, len(repos))
