@@ -5,6 +5,9 @@ platforms=(darwin linux)
 
 dep ensure -vendor-only
 
+go vet ./...
+go test -cover ./...
+
 for platform in "${platforms[@]}"; do
   GOOS=${platform} GOARCH=${arch} go build -o target/ghcli-${platform}-${arch}
 done
