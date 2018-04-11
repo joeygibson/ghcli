@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -40,23 +41,30 @@ func New(inConf *config.Config) Client {
 func (c *Client) GetReposForOrg(org string) (github.Repos, error) {
 	url := fmt.Sprintf(c.githubUrl, c.conf.Org)
 
-	result, err := c.get(url)
+	results, err := c.get(url)
 	if err != nil {
 		return nil, err
 	}
 
-	var repos github.Repos
+	var (
+		allRepos github.Repos
+		repos    github.Repos
+	)
 
-	err = json.Unmarshal(result, &repos)
-	if err != nil {
-		return nil, err
+	for _, result := range results {
+		err = json.Unmarshal(result, &repos)
+		if err != nil {
+			return nil, err
+		}
+
+		allRepos = append(allRepos, repos)
 	}
 
-	return repos, nil
+	return allRepos, nil
 }
 
 func (c *Client) GetPullRequestsForRepo(url string) (github.PullRequests, error) {
-	result, err := c.get(url)
+	results, err := c.get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -71,12 +79,14 @@ func (c *Client) GetPullRequestsForRepo(url string) (github.PullRequests, error)
 	return pullRequests, nil
 }
 
-func (c *Client) get(url string) ([]byte, error) {
-	if len(strings.TrimSpace(url)) == 0 {
+func (c *Client) get(getUrl string) ([][]byte, error) {
+	var results [][]byte
+
+	if len(strings.TrimSpace(getUrl)) == 0 {
 		return nil, errors.New("invalid URL")
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", getUrl, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -89,33 +99,64 @@ func (c *Client) get(url string) ([]byte, error) {
 		logrus.Debug("Proceeding as anonymous")
 	}
 
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("getting %s: %v", url, err))
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+	for {
+		resp, err := c.client.Do(req)
 		if err != nil {
-			return nil, err
+			return nil, errors.New(fmt.Sprintf("getting %s: %v", getUrl, err))
 		}
 
-		return body, nil
-	}
+		if resp.StatusCode == http.StatusOK {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
 
-	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, errors.New("unauthorized; either your token is invalid, or you used an incorrect user/password")
-	}
+			results = append(results, body)
 
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("the org/repo you requested was not found")
-	}
+			resp.Body.Close()
 
-	if resp.StatusCode == http.StatusForbidden {
-		return nil, errors.New("you are not permitted to access that org/repo")
+			nextUrl := getNextPageUrl(resp)
+
+			if nextUrl == "" {
+				return results, nil
+			}
+
+			req.URL, err = url.Parse(nextUrl)
+			if err != nil {
+				return results, err
+			}
+
+			continue
+		}
+
+		if resp.StatusCode == http.StatusUnauthorized {
+			return nil, errors.New("unauthorized; either your token is invalid, or you used an incorrect user/password")
+		}
+
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, errors.New("the org/repo you requested was not found")
+		}
+
+		if resp.StatusCode == http.StatusForbidden {
+			return nil, errors.New("you are not permitted to access that org/repo")
+		}
 	}
 
 	return nil, errors.New(fmt.Sprintf("the Github server was unable to complete your request: %v", err))
+}
+
+func getNextPageUrl(resp *http.Response) string {
+	link := resp.Header.Get("Link")
+
+	chunks := strings.Split(link, ",")
+
+	for _, chunk := range chunks {
+		chunks := strings.Split(chunk, ";")
+
+		if chunks[1] == `rel="next"` {
+			return strings.Trim(chunks[0], "<>")
+		}
+	}
+
+	return ""
 }
